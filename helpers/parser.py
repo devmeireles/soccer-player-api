@@ -1,5 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import re
+import itertools
+import operator
+from collections import defaultdict
+import pandas as pd
 
 class Parser():
     @staticmethod
@@ -38,7 +42,10 @@ class Parser():
         try:
             data = {}
             profile = soup.select('.dataContent > .dataBottom > .dataDaten')
+            player = soup.select('.dataMain > .dataTop > .dataName > h1')[0].text
             profile_size = range(len(profile))
+
+            data.update({'name': player})
 
             for profile_index in range(len(profile_size)):
                 if profile_index == 0:
@@ -55,105 +62,153 @@ class Parser():
         return data
 
 
-
     @staticmethod
-    def overal_ballance(soup, position):
+    def stats(soup, position):
         data = []
         try:
-            player = soup.select('.dataMain > .dataTop > .dataName > h1')[0].text
-            
-            overall_table = soup.select('.responsive-table > .grid-view > .items > tbody')[0]
-            
             if position == "Goalkeeper":
-                return Parser.goalkeeper_overall(soup)
+                return Parser.stats_goalkeeper(soup)
             else:
-                return Parser.line_overall(soup)
+                return Parser.stats_line(soup)
 
         except IndexError:
             pass
 
     @staticmethod
-    def line_overall(soup):
+    def stats_line(soup):
         data = []
-        try:            
-            overall_table = soup.select('.responsive-table > .grid-view > .items > tbody')[0]
-            
-            for cells in overall_table.find_all(True, {"class": re.compile("^(even|odd)$")}):
-                league = cells.find_all('td')[1].text
-                apps = cells.find_all('td')[2].text
-                goals = cells.find_all('td')[3].text
-                assists = cells.find_all('td')[4].text
-                own_goals = cells.find_all('td')[5].text
-                substitutions_on = cells.find_all('td')[6].text
-                substitutions_off = cells.find_all('td')[7].text
-                yellow_card = cells.find_all('td')[8].text
-                second_yellow_card = cells.find_all('td')[9].text
-                red_card = cells.find_all('td')[10].text
-                penalty_goal = cells.find_all('td')[11].text
-                minutes_per_goal = cells.find_all('td')[12].text
-                minutes_played = cells.find_all('td')[13].text
-                
+        try:
+            table = soup.select('.items > tbody')[0]
 
-                player_overall =  {
+            for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
+                season = cells.find_all('td')[0].text
+                league = cells.find_all('td')[1].img['title']
+                league_badge = cells.find_all('td')[1].img['src']
+                club = cells.find_all('td')[3].a.img['alt']
+                club_badge = cells.find_all('td')[3].a.img['src']
+                squads = cells.find_all('td')[4].text
+                apps = cells.find_all('td')[5].text
+                ppg = cells.find_all('td')[6].text
+                goals = cells.find_all('td')[7].text
+                assists = cells.find_all('td')[8].text
+                own_goal = cells.find_all('td')[9].text
+                substitutions_on = cells.find_all('td')[10].text
+                substitutions_off = cells.find_all('td')[11].text
+                yellow_card = cells.find_all('td')[12].text
+                second_yellow_card = cells.find_all('td')[13].text
+                red_card = cells.find_all('td')[14].text
+                penalty_goal = cells.find_all('td')[15].text
+                minutes_goal = cells.find_all('td')[16].text
+                minutes_played = re.match('^[0-9]*$',cells.find_all('td')[17].text)
+                
+                stats = {
+                    'season': season,
                     'league': league,
-                    'apps': 0 if apps == '-' else apps,
-                    'goals': 0 if goals == '-' else goals,
-                    'assists': 0 if assists == '-' else assists,
-                    'own_goals': 0 if own_goals == '-' else own_goals,
-                    'substitutions_on': 0 if substitutions_on == '-' else substitutions_on,
-                    'substitutions_off': 0 if substitutions_off == '-' else substitutions_off,
-                    'yellow_card': 0 if yellow_card == '-' else yellow_card,
-                    'second_yellow_card': 0 if second_yellow_card == '-' else second_yellow_card,
-                    'red_card': 0 if red_card == '-' else red_card,
-                    'penalty_goal': 0 if penalty_goal == '-' else penalty_goal,
-                    'minutes_per_goal': 0 if minutes_per_goal == '-' else minutes_per_goal,
+                    'league_badge': league_badge,
+                    'club': club,
+                    'club_badge': club_badge,
+                    'squads': 0 if squads == '-' else int(squads),
+                    'apps': 0 if apps == '-' else int(apps),
+                    'ppg': 0 if ppg == '-' else ppg,
+                    'goals': 0 if goals == '-' else int(goals),
+                    'assists': 0 if assists == '-' else int(assists),
+                    'own_goal': 0 if own_goal == '-' else int(own_goal),
+                    'substitutions_on': 0 if substitutions_on == '-' else int(substitutions_on),
+                    'substitutions_off': 0 if substitutions_off == '-' else int(substitutions_off),
+                    'yellow_card': 0 if yellow_card == '-' else int(yellow_card),
+                    'second_yellow_card': 0 if second_yellow_card == '-' else int(second_yellow_card),
+                    'red_card': 0 if red_card == '-' else int(red_card),
+                    'penalty_goal': 0 if penalty_goal == '-' else int(penalty_goal),
+                    'minutes_goal': 0 if minutes_goal == '-' else minutes_goal,
                     'minutes_played': 0 if minutes_played == '-' else minutes_played,
                 }
 
-                data.append(player_overall)
-        except IndexError:
+                data.append(stats)
+        except IndexError as e:
             pass
 
         return data
 
     @staticmethod
-    def goalkeeper_overall(soup):
+    def stats_goalkeeper(soup):
         data = []
-        try:            
-            overall_table = soup.select('.responsive-table > .grid-view > .items > tbody')[0]
-            
-            for cells in overall_table.find_all(True, {"class": re.compile("^(even|odd)$")}):
-                league = cells.find_all('td')[1].text
-                apps = cells.find_all('td')[2].text
-                goals = cells.find_all('td')[3].text
-                own_goals = cells.find_all('td')[4].text
-                substitutions_on = cells.find_all('td')[5].text
-                substitutions_off = cells.find_all('td')[6].text
-                yellow_card = cells.find_all('td')[7].text
-                second_yellow_card = cells.find_all('td')[8].text
-                red_card = cells.find_all('td')[9].text
-                goals_conceded = cells.find_all('td')[10].text
-                clean_sheets = cells.find_all('td')[11].text
-                minutes_played = cells.find_all('td')[12].text
-                
+        try:
+            table = soup.select('.items > tbody')[0]
 
-                player_overall =  {
+            for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
+                season = cells.find_all('td')[0].text
+                league = cells.find_all('td')[1].img['title']
+                league_badge = cells.find_all('td')[1].img['src']
+                club = cells.find_all('td')[3].a.img['alt']
+                club_badge = cells.find_all('td')[3].a.img['src']
+                squads = cells.find_all('td')[4].text
+                apps = cells.find_all('td')[5].text
+                ppg = cells.find_all('td')[6].text
+                goals = cells.find_all('td')[7].text
+                assists = cells.find_all('td')[8].text
+                substitutions_on = cells.find_all('td')[9].text
+                substitutions_off = cells.find_all('td')[10].text
+                yellow_card = cells.find_all('td')[11].text
+                second_yellow_card = cells.find_all('td')[12].text
+                red_card = cells.find_all('td')[13].text
+                goals_conceded = cells.find_all('td')[14].text
+                clean_sheets = cells.find_all('td')[15].text
+                minutes_played = cells.find_all('td')[16].text
+                
+                stats = {
+                    'season': season,
                     'league': league,
-                    'apps': 0 if apps == '-' else apps,
-                    'goals': 0 if goals == '-' else goals,
-                    'own_goals': 0 if own_goals == '-' else own_goals,
-                    'substitutions_on': 0 if substitutions_on == '-' else substitutions_on,
-                    'substitutions_off': 0 if substitutions_off == '-' else substitutions_off,
-                    'yellow_card': 0 if yellow_card == '-' else yellow_card,
-                    'second_yellow_card': 0 if second_yellow_card == '-' else second_yellow_card,
-                    'red_card': 0 if red_card == '-' else red_card,
-                    'goals_conceded': 0 if goals_conceded == '-' else goals_conceded,
-                    'clean_sheets': 0 if clean_sheets == '-' else clean_sheets,
-                    'minutes_played': 0 if minutes_played == '-' else minutes_played,
+                    'league_badge': league_badge,
+                    'club': club,
+                    'club_badge': club_badge,
+                    'squads': 0 if squads == '-' else int(squads),
+                    'apps': 0 if apps == '-' else int(apps),
+                    'ppg': 0 if ppg == '-' else ppg,
+                    'goals': 0 if goals == '-' else int(goals),
+                    'assists': 0 if assists == '-' else int(assists),
+                    'substitutions_on': 0 if substitutions_on == '-' else int(substitutions_on),
+                    'substitutions_off': 0 if substitutions_off == '-' else int(substitutions_off),
+                    'yellow_card': 0 if yellow_card == '-' else int(yellow_card),
+                    'second_yellow_card': 0 if second_yellow_card == '-' else int(second_yellow_card),
+                    'red_card': 0 if red_card == '-' else int(red_card),
+                    'goals_conceded': 0 if goals_conceded == '-' else int(goals_conceded),
+                    'clean_sheets': 0 if clean_sheets == '-' else int(clean_sheets),
+                    'minutes_played': 0 if minutes_played == '-' else Parser.format_minutes(minutes_played),
                 }
 
-                data.append(player_overall)
-        except IndexError:
+                data.append(stats)
+        except IndexError as e:
             pass
 
         return data
+
+    @staticmethod
+    def stats_by_club(data):
+        stats = Parser.group_sum(['club'], data)
+
+        return stats
+
+    @staticmethod
+    def stats_by_league(data):
+
+        stats = Parser.group_sum(['league'], data)
+
+        return stats
+
+    def group_sum(filter_key, data):
+        df = pd.DataFrame.from_dict(data)
+        columns = df.columns.tolist()
+        df = df.groupby(filter_key).sum().reset_index()
+        dd = defaultdict(list)
+
+        response = df.to_dict('records', into=dd)
+        
+        return response
+
+
+    def format_minutes(minutes):
+        minutes_played = minutes.replace("'", "")
+        minutes_played = minutes_played.replace(".", "")
+        minutes_played = int(minutes_played)
+
+        return minutes_played

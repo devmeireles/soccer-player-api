@@ -1,22 +1,24 @@
 from helpers.crawler import Crawler
 from helpers.parser import Parser
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 
 
 class Data():
 
     @staticmethod
-    def build(id):
-        url = f"https://www.transfermarkt.com/andriy-shevchenko/leistungsdaten/spieler/{id}/saison//plus/1#gesamt"
+    def build_player_stats(id):
+        url = f"https://www.transfermarkt.com/ronaldinho/leistungsdatendetails/spieler/{id}/saison//verein/0/liga/0/wettbewerb//pos/0/trainer_id/0/plus/1"
 
-        # soup = Crawler.get_data(url)
+        soup = Crawler.get_data(url)
 
-        soup = BeautifulSoup(open('kahn.html'), "html.parser")
         head = Parser.player_head(soup)
-        overall = Parser.overal_ballance(soup, head['position'])
-        
+        overall = Parser.stats(soup, head['position'])
+        stats_by_club = Parser.stats_by_club(overall)
+        stats_by_league = Parser.stats_by_league(overall)
 
         return {
             'player_bio': head,
-            'player_data': overall
+            'overall': overall,
+            'stats_by_club': stats_by_club,
+            'stats_by_league': stats_by_league
         }
