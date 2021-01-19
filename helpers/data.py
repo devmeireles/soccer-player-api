@@ -15,10 +15,12 @@ class Data():
         overall = Parser.stats(soup, head['position'])
         stats_by_club = Parser.stats_by_club(overall)
         stats_by_league = Parser.stats_by_league(overall)
+        stats_by_season = Parser.stats_by_season(overall)
 
         return {
             'player_bio': head,
             'overall': overall,
             'stats_by_club': stats_by_club,
-            'stats_by_league': stats_by_league
+            'stats_by_league': stats_by_league,
+            'stats_by_season': stats_by_season
         }

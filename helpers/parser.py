@@ -195,6 +195,13 @@ class Parser():
 
         return stats
 
+    @staticmethod
+    def stats_by_season(data):
+
+        stats = Parser.group_sum(['season'], data)
+
+        return stats
+
     def group_sum(filter_key, data):
         df = pd.DataFrame.from_dict(data)
         columns = df.columns.tolist()
