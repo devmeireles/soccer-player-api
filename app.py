@@ -1,9 +1,13 @@
 from flask import Flask, jsonify
 from helpers.data import Data
 
-api = Flask(__name__)
+app = Flask(__name__)
 
-@api.route('/player/stats/<id>', methods=['GET'])
+@app.route("/")
+def hello():
+    return "<h1 style='color:blue'>Hello There!</h1>"
+
+@app.route('/player/stats/<id>', methods=['GET'])
 def get_player_stats(id):
     try:
         player = Data.build_player_stats(id)
@@ -18,4 +22,4 @@ def get_player_stats(id):
         })
 
 if __name__ == '__main__':
-    api.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
