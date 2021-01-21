@@ -4,6 +4,8 @@ import itertools
 import operator
 from collections import defaultdict
 import pandas as pd
+import numpy as np
+import calendar
 
 class Parser():
     @staticmethod
@@ -14,6 +16,7 @@ class Parser():
         splited = text.split(":")
         key = splited[0]
         value = splited[1]
+        value = value.strip()
 
         if key == 'Current international':
             key = 'current_international'
@@ -33,19 +36,34 @@ class Parser():
             key = 'height'
         elif key == 'Former International':
             key = 'former_international'
+        elif key == 'Caps/Goals':
+            key = 'international_performance'
+            splited_value = value.split("/")
+            value = {
+                "apps": splited_value[0],
+                "goals": splited_value[1],
+            }
+        elif key == 'Date of death':
+            key = 'data_death'
+            value = Parser.format_date(value)
+        elif key == 'Date of birth/Age':
+            key = 'birth'
+            value = Parser.format_date(value)
 
 
-        return key, value.strip()
+        return key, value
     
     @staticmethod
     def player_head(soup):
         try:
             data = {}
             profile = soup.select('.dataContent > .dataBottom > .dataDaten')
+            profile_image = soup.select('.dataBild > img')[0]['src']
             player = soup.select('.dataMain > .dataTop > .dataName > h1')[0].text
             profile_size = range(len(profile))
 
             data.update({'name': player})
+            data.update({'profile_image': profile_image})
 
             for profile_index in range(len(profile_size)):
                 if profile_index == 0:
@@ -56,6 +74,10 @@ class Parser():
                 for p in profile[profile_index].find_all('p'):
                     formated_text = Parser.format_text(p.text)
                     data.update({formated_text[0]: formated_text[1]})
+
+            player_status = soup.select('.dataZusatzDaten > .hauptpunkt')[0]
+            if player_status:
+                data.update({'player_status': player_status.text})
         except IndexError:
             pass
 
@@ -154,7 +176,7 @@ class Parser():
                 goals_conceded = cells.find_all('td')[14].text
                 clean_sheets = cells.find_all('td')[15].text
                 minutes_played = cells.find_all('td')[16].text
-                
+
                 stats = {
                     'season': season,
                     'league': league,
@@ -204,14 +226,13 @@ class Parser():
 
     def group_sum(filter_key, data):
         df = pd.DataFrame.from_dict(data)
-        columns = df.columns.tolist()
-        df = df.groupby(filter_key).sum().reset_index()
-        dd = defaultdict(list)
 
+        df = df.groupby(filter_key).sum(numeric_only=True).reset_index()
+
+        dd = defaultdict(list)
         response = df.to_dict('records', into=dd)
         
         return response
-
 
     def format_minutes(minutes):
         minutes_played = minutes.replace("'", "")
@@ -219,3 +240,24 @@ class Parser():
         minutes_played = int(minutes_played)
 
         return minutes_played
+
+    def alphabet_position(text):
+        nums = [str(ord(x) - 96) for x in text.lower() if x >= 'a' and x <= 'z']
+        return "".join(nums)
+
+    def format_date(value):
+        if re.match("[a-zA-Z][a-z][a-z][\s][0-9][,][\s][0-9][0-9][0-9][0-9][(][0-9][0-9][)]+", value):
+            return value[: -4]
+        elif re.match("[a-zA-Z][a-z][a-z][\s][0-9][0-9][,][\s][0-9][0-9][0-9][0-9][(][0-9][0-9][)]+", value):
+            return value[: -4]
+        elif re.match("[0-9][0-9][.][0-9][0-9].[0-9][0-9][0-9][0-9][\W][(][0-9][0-9][)]+", value):
+            value = value[: -5]
+            splited_value = value.split(".")
+            month = int(splited_value[1])
+            month = calendar.month_abbr[month]
+
+            date = f"{month} {splited_value[1]}, {splited_value[2]}"
+            
+            return date
+
+        return value

@@ -1,0 +1,20 @@
+{
+  "name": "Soccer Crawler API",
+  "description": "A soccer crawler API with Flask",
+  "image": "heroku/python",
+  "repository": "https://github.com/heroku/python-getting-started",
+  "keywords": ["python", "flask" ],
+  "env": {
+    "SECRET_KEY": {
+      "description": "The secret key for the application.",
+      "generator": "secret"
+    }
+  },
+  "environments": {
+    "test": {
+      "scripts": {
+        "test-setup": "python app.py",
+      }
+    }
+  }
+}

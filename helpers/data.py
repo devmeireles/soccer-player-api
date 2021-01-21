@@ -11,6 +11,8 @@ class Data():
 
         soup = Crawler.get_data(url)
 
+        # soup = bs(open('./html/eusebio.html'), "html.parser")
+
         head = Parser.player_head(soup)
         overall = Parser.stats(soup, head['position'])
         stats_by_club = Parser.stats_by_club(overall)
