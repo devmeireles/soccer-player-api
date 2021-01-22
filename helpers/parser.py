@@ -121,7 +121,7 @@ class Parser():
                 red_card = cells.find_all('td')[14].text
                 penalty_goal = cells.find_all('td')[15].text
                 minutes_goal = cells.find_all('td')[16].text
-                minutes_played = re.match('^[0-9]*$',cells.find_all('td')[17].text)
+                minutes_played = cells.find_all('td')[17].text
                 
                 stats = {
                     'season': season,
@@ -141,8 +141,8 @@ class Parser():
                     'second_yellow_card': 0 if second_yellow_card == '-' else int(second_yellow_card),
                     'red_card': 0 if red_card == '-' else int(red_card),
                     'penalty_goal': 0 if penalty_goal == '-' else int(penalty_goal),
-                    'minutes_goal': 0 if minutes_goal == '-' else minutes_goal,
-                    'minutes_played': 0 if minutes_played == '-' else minutes_played,
+                    'minutes_goal': 0 if minutes_goal == '-' else Parser.format_minutes(minutes_goal),
+                    'minutes_played': 0 if minutes_played == '-' else Parser.format_minutes(minutes_played),
                 }
 
                 data.append(stats)
