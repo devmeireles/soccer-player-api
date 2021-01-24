@@ -9,9 +9,9 @@ class Data():
     def build_player_stats(id):
         url = f"https://www.transfermarkt.com/ronaldinho/leistungsdatendetails/spieler/{id}/saison//verein/0/liga/0/wettbewerb//pos/0/trainer_id/0/plus/1"
 
-        # soup = Crawler.get_data(url)
+        soup = Crawler.get_data(url)
 
-        soup = bs(open('./html/stats.html'), "html.parser")
+        # soup = bs(open('./html/stats.html'), "html.parser")
 
         head = Parser.player_head(soup)
         overall = Parser.stats(soup, head['position'])
@@ -22,9 +22,9 @@ class Data():
         data =  {
             'player_bio': head,
             'overall': overall,
-            # 'stats_by_club': stats_by_club,
-            # 'stats_by_league': stats_by_league,
-            # 'stats_by_season': stats_by_season
+            'stats_by_club': stats_by_club,
+            'stats_by_league': stats_by_league,
+            'stats_by_season': stats_by_season
         }
 
         return data
