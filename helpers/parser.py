@@ -6,6 +6,7 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 import calendar
+from datetime import datetime
 
 class Parser():
     @staticmethod
@@ -80,6 +81,10 @@ class Parser():
                 data.update({'player_status': player_status.text})
         except IndexError:
             pass
+
+
+        if 'contract_expires' in data:
+            data['contract_expires_days'] = Parser.format_contract(data['contract_expires'])
 
         return data
 
@@ -224,6 +229,32 @@ class Parser():
 
         return stats
 
+    @staticmethod
+    def current_club(current, status):
+        if status == 'Retired':
+            data = {}
+        else:
+            data = {
+                'club': current['club'],
+                'club_badge': current['club_badge'],
+            }
+
+        return data
+
+    @staticmethod
+    def played_clubs(clubs):
+        played_clubs = []
+        
+        for item in clubs:
+            data = {
+                'club': item['club'],
+                'club_badge': item['club_badge'],
+            }
+
+            played_clubs.append(data)
+
+        return Parser.remove_dupe_dicts(played_clubs)
+
     def group_sum(filter_key, data):
         df = pd.DataFrame.from_dict(data)
 
@@ -261,3 +292,36 @@ class Parser():
             return date
 
         return value
+
+    def format_contract(date):
+        formated_date = datetime.strptime(date, '%b %d, %Y')
+        today = datetime.today()
+
+        remaining_days = formated_date - today
+
+        return remaining_days.days
+
+
+    def remove_dupe_dicts(data):
+        try:
+            aux = []
+            b = []
+            for item in data:
+                if item['club'] not in aux:
+                    b.append({
+                        "club": item['club'],
+                        "club_badge": item['club_badge']
+                    })
+                    aux.append(item['club'])
+        except:
+            pass
+        return b
+
+    def add_badge(stats, clubs):
+        for item in range(0, len(stats)):
+            for club in clubs:
+                if stats[item]['club'] == club['club']:
+                    stats[item]['club_badge'] = club['club_badge']
+                    
+
+        return stats
