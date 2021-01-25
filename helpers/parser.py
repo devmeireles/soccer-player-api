@@ -127,6 +127,8 @@ class Parser():
                 penalty_goal = cells.find_all('td')[15].text
                 minutes_goal = cells.find_all('td')[16].text
                 minutes_played = cells.find_all('td')[17].text
+
+                club_badge = club_badge.replace('tiny', 'normal')
                 
                 stats = {
                     'season': season,
@@ -181,6 +183,8 @@ class Parser():
                 goals_conceded = cells.find_all('td')[14].text
                 clean_sheets = cells.find_all('td')[15].text
                 minutes_played = cells.find_all('td')[16].text
+
+                club_badge = club_badge.replace('tiny', 'normal')
 
                 stats = {
                     'season': season,
