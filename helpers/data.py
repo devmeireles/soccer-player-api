@@ -11,7 +11,7 @@ class Data():
 
         soup = Crawler.get_data(url)
 
-        # soup = bs(open('./html/kahn.html'), "html.parser")
+        # soup = bs(open('./html/zlatan.html'), "html.parser")
 
         head = Parser.player_head(soup)
         overall = Parser.stats(soup, head['position'])

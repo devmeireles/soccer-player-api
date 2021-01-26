@@ -128,7 +128,7 @@ class Parser():
                 minutes_goal = cells.find_all('td')[16].text
                 minutes_played = cells.find_all('td')[17].text
 
-                club_badge = club_badge.replace('tiny', 'normal')
+                club_badge = Parser.format_badge(club_badge)
                 
                 stats = {
                     'season': season,
@@ -184,7 +184,7 @@ class Parser():
                 clean_sheets = cells.find_all('td')[15].text
                 minutes_played = cells.find_all('td')[16].text
 
-                club_badge = club_badge.replace('tiny', 'normal')
+                club_badge = Parser.format_badge(club_badge)
 
                 stats = {
                     'season': season,
@@ -329,3 +329,9 @@ class Parser():
                     
 
         return stats
+
+    def format_badge(badge):
+        club_badge = badge.replace('tiny', 'normal')
+        splited_club_badge = club_badge.split('_')
+
+        return splited_club_badge[0] + '.png'
