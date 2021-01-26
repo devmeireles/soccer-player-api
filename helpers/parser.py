@@ -109,8 +109,8 @@ class Parser():
 
             for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
                 season = cells.find_all('td')[0].text
-                league = cells.find_all('td')[1].img['title']
-                league_badge = cells.find_all('td')[1].img['src']
+                league = cells.find_all('td')[1].img['title'] if cells.find_all('td')[1].img else ''
+                league_badge = cells.find_all('td')[1].img['src'] if cells.find_all('td')[1].img else ''
                 club = cells.find_all('td')[3].a.img['alt']
                 club_badge = cells.find_all('td')[3].a.img['src']
                 squads = cells.find_all('td')[4].text
