@@ -129,6 +129,7 @@ class Parser():
                 minutes_played = cells.find_all('td')[17].text
 
                 club_badge = Parser.format_badge(club_badge)
+                league_badge = Parser.format_badge(league_badge)
                 
                 stats = {
                     'season': season,
@@ -185,6 +186,7 @@ class Parser():
                 minutes_played = cells.find_all('td')[16].text
 
                 club_badge = Parser.format_badge(club_badge)
+                league_badge = Parser.format_badge(league_badge)
 
                 stats = {
                     'season': season,
@@ -259,6 +261,20 @@ class Parser():
 
         return Parser.remove_dupe_dicts(played_clubs)
 
+    @staticmethod
+    def played_leagues(leagues):
+        played_leagues = []
+        
+        for item in leagues:
+            data = {
+                'league': item['league'],
+                'league_badge': item['league_badge'],
+            }
+
+            played_leagues.append(data)
+
+        return Parser.remove_dupe_league(played_leagues)
+
     def group_sum(filter_key, data):
         df = pd.DataFrame.from_dict(data)
 
@@ -321,11 +337,35 @@ class Parser():
             pass
         return b
 
+    def remove_dupe_league(data):
+        try:
+            aux = []
+            b = []
+            for item in data:
+                if item['league'] not in aux:
+                    b.append({
+                        "league": item['league'],
+                        "league_badge": item['league_badge']
+                    })
+                    aux.append(item['league'])
+        except:
+            pass
+        return b
+
     def add_badge(stats, clubs):
         for item in range(0, len(stats)):
             for club in clubs:
                 if stats[item]['club'] == club['club']:
                     stats[item]['club_badge'] = club['club_badge']
+                    
+
+        return stats
+
+    def add_badge_league(stats, leagues):
+        for item in range(0, len(stats)):
+            for league in leagues:
+                if stats[item]['league'] == league['league']:
+                    stats[item]['league_badge'] = league['league_badge']
                     
 
         return stats
