@@ -133,3 +133,13 @@ class Formater():
         response = df.to_dict('records', into=dd)
         
         return response
+
+    @staticmethod
+    def format_season(season):
+        if re.match("[0-9][0-9][0-9][0-9]+", season):
+            end_season = season[-2 :]
+            start_season = int(end_season)-1
+
+            return f"{start_season}/{end_season}"
+
+        return season

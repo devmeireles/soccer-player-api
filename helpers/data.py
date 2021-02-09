@@ -12,6 +12,7 @@ class Data():
 
     @staticmethod
     def build_player_stats(id):
+        id = int(id)
         url = f"https://www.transfermarkt.com/ronaldinho/leistungsdatendetails/spieler/{id}/saison//verein/0/liga/0/wettbewerb//pos/0/trainer_id/0/plus/1"
 
         mongo_address = os.getenv('MONGO_ADDRESS')
@@ -49,5 +50,23 @@ class Data():
             'stats_by_league': stats_by_league,
             'stats_by_season': stats_by_season
         }
+
+        item = database.find_item(id, collection)
+
+        if type(item) != type({}):
+            player_data = {
+                'name': head['name'],
+                'profile_image': head['profile_image'],
+                'current_club': current_club,
+                'id': id,
+                'hit': 1
+            }
+
+            database.save_data(player_data, collection)
+        else:
+            update_data = {"$inc": {'hit': 1}}
+            query = {"id": id}
+            database.update(update_data, query, collection)
+
 
         return data

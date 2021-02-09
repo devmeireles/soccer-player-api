@@ -100,7 +100,7 @@ class Parser():
                 league_badge = Formater.format_badge(league_badge)
                 
                 stats = {
-                    'season': season,
+                    'season': Formater.format_season(season),
                     'league': league,
                     'league_badge': league_badge,
                     'club': club,
