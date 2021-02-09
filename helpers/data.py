@@ -21,7 +21,7 @@ class Data():
         played_clubs = Parser.played_clubs(overall)
         played_leagues = Parser.played_leagues(overall)
 
-        stats_by_club = Parser.add_badge(stats_by_club, played_clubs)
+        stats_by_club = Parser.add_badge_club(stats_by_club, played_clubs)
         stats_by_league = Parser.add_badge_league(stats_by_league, played_leagues)
 
         if 'player_status' in head:

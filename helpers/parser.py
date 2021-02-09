@@ -1,61 +1,16 @@
-from bs4 import BeautifulSoup as bs
 import re
-import itertools
-import operator
-from collections import defaultdict
-import pandas as pd
-import numpy as np
-import calendar
-from datetime import datetime
+from bs4 import BeautifulSoup as bs
+from helpers.formater import Formater
 
 class Parser():
     @staticmethod
-    def format_text(text):
-        regex = re.compile(r'[\n\r\t]')
-        text = regex.sub('', text)
-
-        splited = text.split(":")
-        key = splited[0]
-        value = splited[1]
-        value = value.strip()
-
-        if key == 'Current international':
-            key = 'current_international'
-        elif key == 'Place of birth':
-            key = 'birth_place'
-        elif key == 'Citizenship':
-            key = 'citizenship'
-        elif key == 'Position':
-            key = 'position'
-        elif key == 'Citizenship':
-            key = 'citizenship'
-        elif key == 'Agent':
-            key = 'agent'
-        elif key == 'Contract expires':
-            key = 'contract_expires'
-        elif key == 'Height':
-            key = 'height'
-        elif key == 'Former International':
-            key = 'former_international'
-        elif key == 'Caps/Goals':
-            key = 'international_performance'
-            splited_value = value.split("/")
-            value = {
-                "apps": splited_value[0],
-                "goals": splited_value[1],
-            }
-        elif key == 'Date of death':
-            key = 'data_death'
-            value = Parser.format_date(value)
-        elif key == 'Date of birth/Age':
-            key = 'birth'
-            value = Parser.format_date(value)
-
-
-        return key, value
-    
-    @staticmethod
     def player_head(soup):
+        '''
+        player_head method receives a SOUP html content and returns a dict with the player heads content
+
+        Parameters:
+            soup - A SOUP html content
+        '''
         try:
             data = {}
             profile = soup.select('.dataContent > .dataBottom > .dataDaten')
@@ -73,7 +28,7 @@ class Parser():
                         if index == 0:
                             data.update({'birth_country': items_flag[index]['title']})
                 for p in profile[profile_index].find_all('p'):
-                    formated_text = Parser.format_text(p.text)
+                    formated_text = Formater.format_text(p.text)
                     data.update({formated_text[0]: formated_text[1]})
 
             player_status = soup.select('.dataZusatzDaten > .hauptpunkt')[0]
@@ -84,13 +39,20 @@ class Parser():
 
 
         if 'contract_expires' in data:
-            data['contract_expires_days'] = Parser.format_contract(data['contract_expires'])
+            data['contract_expires_days'] = Formater.format_contract(data['contract_expires'])
 
         return data
 
 
     @staticmethod
     def stats(soup, position):
+        '''
+        stats method receives a SOUP html content and the player position to return a dict with the player stats content
+
+        Parameters:
+            soup - A SOUP html content
+            position - A string with the player position
+        '''
         data = []
         try:
             if position == "Goalkeeper":
@@ -103,6 +65,12 @@ class Parser():
 
     @staticmethod
     def stats_line(soup):
+        '''
+        stats_line method receives a SOUP html content and returns a dict with the player stats content
+
+        Parameters:
+            soup - A SOUP html content
+        '''
         data = []
         try:
             table = soup.select('.items > tbody')[0]
@@ -128,8 +96,8 @@ class Parser():
                 minutes_goal = cells.find_all('td')[16].text
                 minutes_played = cells.find_all('td')[17].text
 
-                club_badge = Parser.format_badge(club_badge)
-                league_badge = Parser.format_badge(league_badge)
+                club_badge = Formater.format_badge(club_badge)
+                league_badge = Formater.format_badge(league_badge)
                 
                 stats = {
                     'season': season,
@@ -149,8 +117,8 @@ class Parser():
                     'second_yellow_card': 0 if second_yellow_card == '-' else int(second_yellow_card),
                     'red_card': 0 if red_card == '-' else int(red_card),
                     'penalty_goal': 0 if penalty_goal == '-' else int(penalty_goal),
-                    'minutes_goal': 0 if minutes_goal == '-' else Parser.format_minutes(minutes_goal),
-                    'minutes_played': 0 if minutes_played == '-' else Parser.format_minutes(minutes_played),
+                    'minutes_goal': 0 if minutes_goal == '-' else Formater.format_minutes(minutes_goal),
+                    'minutes_played': 0 if minutes_played == '-' else Formater.format_minutes(minutes_played),
                 }
 
                 data.append(stats)
@@ -161,6 +129,12 @@ class Parser():
 
     @staticmethod
     def stats_goalkeeper(soup):
+        '''
+        stats_goalkeeper method receives a SOUP html content and returns a dict with the player stats content for goalkeeper
+
+        Parameters:
+            soup - A SOUP html content
+        '''
         data = []
         try:
             table = soup.select('.items > tbody')[0]
@@ -185,8 +159,8 @@ class Parser():
                 clean_sheets = cells.find_all('td')[15].text
                 minutes_played = cells.find_all('td')[16].text
 
-                club_badge = Parser.format_badge(club_badge)
-                league_badge = Parser.format_badge(league_badge)
+                club_badge = Formater.format_badge(club_badge)
+                league_badge = Formater.format_badge(league_badge)
 
                 stats = {
                     'season': season,
@@ -206,7 +180,7 @@ class Parser():
                     'red_card': 0 if red_card == '-' else int(red_card),
                     'goals_conceded': 0 if goals_conceded == '-' else int(goals_conceded),
                     'clean_sheets': 0 if clean_sheets == '-' else int(clean_sheets),
-                    'minutes_played': 0 if minutes_played == '-' else Parser.format_minutes(minutes_played),
+                    'minutes_played': 0 if minutes_played == '-' else Formater.format_minutes(minutes_played),
                 }
 
                 data.append(stats)
@@ -217,26 +191,51 @@ class Parser():
 
     @staticmethod
     def stats_by_club(data):
-        stats = Parser.group_sum(['club'], data)
+        '''
+        stats_by_club method receives a dict with the player stats and returns a dict with the stats content grouped by club
+
+        Parameters:
+            data - A dict with the player stats
+        '''
+        stats = Formater.group_sum(['club'], data)
 
         return stats
 
     @staticmethod
     def stats_by_league(data):
+        '''
+        stats_by_league method receives a dict with the player stats and returns a dict with the stats content grouped by league
 
-        stats = Parser.group_sum(['league'], data)
+        Parameters:
+            data - A dict with the player stats
+        '''
+
+        stats = Formater.group_sum(['league'], data)
 
         return stats
 
     @staticmethod
     def stats_by_season(data):
+        '''
+        stats_by_season method receives a dict with the player stats and returns a dict with the stats content grouped by season
 
-        stats = Parser.group_sum(['season'], data)
+        Parameters:
+            data - A dict with the player stats
+        '''
+
+        stats = Formater.group_sum(['season'], data)
 
         return stats
 
     @staticmethod
     def current_club(current, status):
+        '''
+        current_club method receives a dict with the player head data and the player status to return a dict with the current club
+
+        Parameters:
+            current - A dict with the player head data
+            status - A string with the player status
+        '''
         if status == 'Retired':
             data = {}
         else:
@@ -249,6 +248,12 @@ class Parser():
 
     @staticmethod
     def played_clubs(clubs):
+        '''
+        played_clubs method receives a dict with the player stats and returns a dict with the played clubs
+
+        Parameters:
+            clubs - A dict with the player stats
+        '''
         played_clubs = []
         
         for item in clubs:
@@ -259,10 +264,16 @@ class Parser():
 
             played_clubs.append(data)
 
-        return Parser.remove_dupe_dicts(played_clubs)
+        return Formater.remove_dupe_clubs(played_clubs)
 
     @staticmethod
     def played_leagues(leagues):
+        '''
+        played_leagues method receives a dict with the player stats and returns a dict with the played leagues
+
+        Parameters:
+            leagues - A dict with the player stats
+        '''
         played_leagues = []
         
         for item in leagues:
@@ -273,86 +284,16 @@ class Parser():
 
             played_leagues.append(data)
 
-        return Parser.remove_dupe_league(played_leagues)
+        return Formater.remove_dupe_league(played_leagues)
 
-    def group_sum(filter_key, data):
-        df = pd.DataFrame.from_dict(data)
+    def add_badge_club(stats, clubs):
+        '''
+        add_badge_club method receives a dict with the stats by club and an another dict with the played clubs to add and the badges to the clubs
 
-        df = df.groupby(filter_key).sum(numeric_only=True).reset_index()
-
-        dd = defaultdict(list)
-        response = df.to_dict('records', into=dd)
-        
-        return response
-
-    def format_minutes(minutes):
-        minutes_played = minutes.replace("'", "")
-        minutes_played = minutes_played.replace(".", "")
-        minutes_played = int(minutes_played)
-
-        return minutes_played
-
-    def alphabet_position(text):
-        nums = [str(ord(x) - 96) for x in text.lower() if x >= 'a' and x <= 'z']
-        return "".join(nums)
-
-    def format_date(value):
-        if re.match("[a-zA-Z][a-z][a-z][\s][0-9][,][\s][0-9][0-9][0-9][0-9][(][0-9][0-9][)]+", value):
-            return value[: -4]
-        elif re.match("[a-zA-Z][a-z][a-z][\s][0-9][0-9][,][\s][0-9][0-9][0-9][0-9][(][0-9][0-9][)]+", value):
-            return value[: -4]
-        elif re.match("[0-9][0-9][.][0-9][0-9].[0-9][0-9][0-9][0-9][\W][(][0-9][0-9][)]+", value):
-            value = value[: -5]
-            splited_value = value.split(".")
-            month = int(splited_value[1])
-            month = calendar.month_abbr[month]
-
-            date = f"{month} {splited_value[1]}, {splited_value[2]}"
-            
-            return date
-
-        return value
-
-    def format_contract(date):
-        formated_date = datetime.strptime(date, '%b %d, %Y')
-        today = datetime.today()
-
-        remaining_days = formated_date - today
-
-        return remaining_days.days
-
-
-    def remove_dupe_dicts(data):
-        try:
-            aux = []
-            b = []
-            for item in data:
-                if item['club'] not in aux:
-                    b.append({
-                        "club": item['club'],
-                        "club_badge": item['club_badge']
-                    })
-                    aux.append(item['club'])
-        except:
-            pass
-        return b
-
-    def remove_dupe_league(data):
-        try:
-            aux = []
-            b = []
-            for item in data:
-                if item['league'] not in aux:
-                    b.append({
-                        "league": item['league'],
-                        "league_badge": item['league_badge']
-                    })
-                    aux.append(item['league'])
-        except:
-            pass
-        return b
-
-    def add_badge(stats, clubs):
+        Parameters:
+            stats - A dict with the player stats by club
+            clubs - A dict with the played clubs
+        '''
         for item in range(0, len(stats)):
             for club in clubs:
                 if stats[item]['club'] == club['club']:
@@ -362,6 +303,13 @@ class Parser():
         return stats
 
     def add_badge_league(stats, leagues):
+        '''
+        add_badge_league method receives a dict with the stats by league and an another dict with the played leagues to add and return the badges to the leagues
+
+        Parameters:
+            stats - A dict with the player stats by league
+            leagues - A dict with the played leagues
+        '''
         for item in range(0, len(stats)):
             for league in leagues:
                 if stats[item]['league'] == league['league']:
@@ -370,8 +318,4 @@ class Parser():
 
         return stats
 
-    def format_badge(badge):
-        club_badge = badge.replace('tiny', 'normal')
-        splited_club_badge = club_badge.split('_')
-
-        return splited_club_badge[0] + '.png'
+    
