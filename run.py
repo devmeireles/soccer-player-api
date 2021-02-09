@@ -6,6 +6,6 @@ from bs4 import BeautifulSoup
 
 pp = pprint.PrettyPrinter(depth=4)
 
-temp = Data.build_player_stats(3373)
+temp = Data.build_player_stats(17121)
 
 pp.pprint(temp)
