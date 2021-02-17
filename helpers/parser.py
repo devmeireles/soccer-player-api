@@ -318,4 +318,34 @@ class Parser():
 
         return stats
 
+    def get_league_id(url):
+        splited = url.split('/')
+
+        return splited[-1]
     
+    def get_league_dict(soup):
+        data = []
+        try:
+            table = soup.select('.items > tbody')[0]
+
+            for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
+                league = cells.find_all('td')[0].text
+                league_badge = cells.find_all('td')[0].img['src'] if cells.find_all('td')[0].img else ''
+                league_url = cells.find_all('td')[2].find('a')['href']
+                country = cells.find_all('td')[3].img['alt'] if cells.find_all('td')[3].img else ''
+                country_flag = cells.find_all('td')[3].img['src'] if cells.find_all('td')[3].img else ''
+
+                stats = {
+                    'league': league.replace('\n', ''),
+                    'league_badge': league_badge,
+                    'league_url': league_url,
+                    'league_id': Parser.get_league_id(league_url),
+                    'country': country.replace('\n', ''),
+                    'country_flag': country_flag,
+                }
+
+                data.append(stats)
+        except IndexError as e:
+            pass
+
+        return data

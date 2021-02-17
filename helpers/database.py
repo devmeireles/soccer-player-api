@@ -46,6 +46,11 @@ class Database():
                 {"id": id})
 
     @staticmethod
+    def find_by_key(value, collection, key):
+        return Database.connection[f'{collection}'].find_one(
+                {f"{key}": value})
+
+    @staticmethod
     def save_data(data, collection):
         return Database.save(data, collection)
 

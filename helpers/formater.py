@@ -1,4 +1,5 @@
 import re
+import calendar
 from datetime import datetime
 import pandas as pd
 from collections import defaultdict
@@ -129,9 +130,13 @@ class Formater():
 
         df = df.groupby(filter_key).sum(numeric_only=True).reset_index()
 
+        if filter_key[0] == 'season':
+            df['year'] = df.apply(lambda row: Formater.season_to_year(row['season']), axis=1)
+            df = df.sort_values('year')
+
         dd = defaultdict(list)
         response = df.to_dict('records', into=dd)
-        
+
         return response
 
     @staticmethod
@@ -143,3 +148,11 @@ class Formater():
             return f"{start_season}/{end_season}"
 
         return season
+
+    def season_to_year(season):
+        splited_season = season.split('/')[0]
+
+        if splited_season[0] == '0':
+            return f"20{splited_season}"
+        
+        return f"19{splited_season}"
