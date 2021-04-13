@@ -69,3 +69,10 @@ class Database():
             {"status": "created"})
 
         return item['id']
+
+    @staticmethod
+    def find_player(keyword, collection):
+        query = {'name': {'$regex': keyword}}
+        items = Database.connection[f'{collection}'].find(query).sort("hit", -1)
+
+        return items

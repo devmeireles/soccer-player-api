@@ -11,6 +11,23 @@ load_dotenv(verbose=True)
 class Data():
 
     @staticmethod
+    def search_player(keyword):
+        data = []
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        collection = 'players'
+
+        database = Database(mongo_address, db_name)
+
+        items = database.find_player(keyword, collection)
+
+        for item in items:
+            del item['_id']
+            data.append(item)
+
+        return data
+
+    @staticmethod
     def build_player_stats(id):
         id = int(id)
         url = f"https://www.transfermarkt.com/ronaldinho/leistungsdatendetails/spieler/{id}/saison//verein/0/liga/0/wettbewerb//pos/0/trainer_id/0/plus/1"
