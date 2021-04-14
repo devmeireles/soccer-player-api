@@ -41,6 +41,10 @@ class Database():
         Database.connection[f'{collection}'].update_one(query, data)
 
     @staticmethod
+    def find(collection):
+        return Database.connection[f'{collection}'].find()
+
+    @staticmethod
     def find_item(id, collection):
         return Database.connection[f'{collection}'].find_one(
                 {"id": id})
@@ -73,6 +77,17 @@ class Database():
     @staticmethod
     def find_player(keyword, collection):
         query = {'name': {'$regex': keyword}}
-        items = Database.connection[f'{collection}'].find(query).sort("hit", -1)
+        items = Database.connection[f'{collection}'].find(query).sort("hit", -1).limit(10)
 
         return items
+
+    @staticmethod
+    def find_top(collection):
+        items = Database.connection[f'{collection}'].find().sort("hit", -1).limit(10)
+
+        return items
+
+    @staticmethod
+    def count_collection(collection):
+        item = Database.connection[f'{collection}'].find().count()
+        return item

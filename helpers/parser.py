@@ -349,3 +349,29 @@ class Parser():
             pass
 
         return data
+
+    def get_club_dict(soup, league_id):
+        data = []
+        try:
+            table = soup.select('.items > tbody')[0]
+
+            for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
+                club_url = cells.find_all('td')[0].find('a')['href']
+                club_badge = cells.find_all('td')[0].find('a').img['src'] if cells.find_all('td')[0].find('a').img else ''
+                club = cells.find_all('td')[0].find('a').img['alt'] if cells.find_all('td')[0].find('a').img else ''
+
+                club_id = club_url.split('/')[4]
+
+                stats = {
+                    'club': club.replace('\n', ''),
+                    'club_badge': club_badge,
+                    'club_url': club_url,
+                    'league_id': league_id,
+                    'club_id': club_id
+                }
+
+                data.append(stats)
+        except IndexError as e:
+            pass
+
+        return data

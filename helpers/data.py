@@ -11,6 +11,48 @@ load_dotenv(verbose=True)
 class Data():
 
     @staticmethod
+    def get_configs():
+        data = []
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        leagues_collection = 'leagues'
+        clubs_collection = 'clubs'
+        players_collection = 'players'
+
+        database = Database(mongo_address, db_name)
+
+        leagues = database.count_collection(leagues_collection)
+        clubs = database.count_collection(clubs_collection)
+        players = database.count_collection(players_collection)
+
+        data.append(
+            {
+                'leagues': leagues,
+                'clubs': clubs,
+                'players': players,
+            }
+        )
+
+        return data
+
+    @staticmethod
+    def search_top():
+        data = []
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        collection = 'players'
+
+        database = Database(mongo_address, db_name)
+
+        items = database.find_top(collection)
+
+        for item in items:
+            del item['_id']
+            data.append(item)
+
+        return data
+
+    @staticmethod
     def search_player(keyword):
         data = []
         mongo_address = os.getenv('MONGO_ADDRESS')
