@@ -100,7 +100,7 @@ class Data():
             current_club = {}
 
         data =  {
-            'id': int(id),
+            'id': str(id),
             'player_bio': head,
             'current_club': current_club,
             'played_clubs': played_clubs,
@@ -117,7 +117,7 @@ class Data():
                 'name': head['name'],
                 'profile_image': head['profile_image'],
                 'current_club': current_club,
-                'id': int(id),
+                'id': str(id),
                 'hit': 1
             }
 
