@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+import re
+
 
 
 class Database():
@@ -76,7 +78,12 @@ class Database():
 
     @staticmethod
     def find_player(keyword, collection):
-        query = {'name': {'$regex': keyword}}
+        query = {
+        "name": {
+            "$regex": keyword,
+            "$options" :'i' # case-insensitive
+            }
+        }
         items = Database.connection[f'{collection}'].find(query).sort("hit", -1).limit(10)
 
         return items
