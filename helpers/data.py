@@ -11,8 +11,71 @@ load_dotenv(verbose=True)
 class Data():
 
     @staticmethod
+    def get_players(id):
+        data = []
+        player_data = []
+
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        players_collection = 'players'
+
+        database = Database(mongo_address, db_name)
+
+        query = { "current_club.club_id": id }
+        players = database.find_multiple_by_query(query, players_collection)
+
+        for player in players:
+            del player['_id']
+            player_data.append(player)
+
+        return player_data
+
+    @staticmethod
+    def get_clubs(id):
+        data = []
+        club_data = []
+
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        clubs_collection = 'clubs'
+
+        database = Database(mongo_address, db_name)
+
+        # clubs = database.find(clubs_collection)
+        clubs = database.find_multiple_by_key(str(id), clubs_collection, 'league_id')
+
+        for club in clubs:
+            del club['_id']
+            club['club_badge'] = club['club_badge'].replace('tiny', 'head')
+            club_data.append(club)
+
+        return club_data
+
+    @staticmethod
+    def get_leagues():
+        data = []
+        league_data = []
+
+        mongo_address = os.getenv('MONGO_ADDRESS')
+        db_name = os.getenv('DATABASE_NAME')
+        leagues_collection = 'leagues'
+
+        database = Database(mongo_address, db_name)
+
+        leagues = database.find(leagues_collection)
+
+        for league in leagues:
+            del league['_id']
+            league['league_badge'] = league['league_badge'].replace('tiny', 'normal')
+            league['country_flag'] = league['country_flag'].replace('tiny', 'medium')
+            league_data.append(league)
+
+        return league_data
+
+    @staticmethod
     def get_configs():
         data = []
+        league_data = []
         mongo_address = os.getenv('MONGO_ADDRESS')
         db_name = os.getenv('DATABASE_NAME')
         leagues_collection = 'leagues'

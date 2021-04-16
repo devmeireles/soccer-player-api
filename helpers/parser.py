@@ -375,3 +375,31 @@ class Parser():
             pass
 
         return data
+
+
+    def get_players_dict(soup, club_data):
+        data = []
+        try:
+            table = soup.select('.responsive-table > .grid-view > .items > tbody')[0]
+
+            for cells in table.find_all(True, {"class": re.compile("^(even|odd)$")}):
+                name = cells.find_all('td')[1].find('table').find('tr').find('td').find('a').find('img')['alt']
+                profile_image = cells.find_all('td')[1].find('table').find('tr').find('td').find('a').find('img')['data-src']
+                player_id = cells.find_all('td')[1].find('table').find_all('tr')[0].find_all('td')[1].find('div').find('span').find('a')['id']
+
+
+                profile_image = profile_image.replace('small', 'header')
+
+                stats = {
+                    'id': int(player_id),
+                    'name': name,
+                    'profile_image': profile_image,
+                    'current_club': club_data,
+                    'hit': 1
+                }
+
+                data.append(stats)
+        except IndexError as e:
+            pass
+
+        return data

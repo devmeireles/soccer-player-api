@@ -4,7 +4,7 @@ import pprint
 from bs4 import BeautifulSoup as bs
 import time
 from dotenv import load_dotenv
-import os
+import sys, os
 from helpers.database import Database
 
 
@@ -22,7 +22,6 @@ try:
     items = database.find(leagues_collection)
 
     for item in items:
-        # print(item)
         league_id = item['league_id']
 
         url = f'https://www.transfermarkt.com/premier-league/startseite/wettbewerb/{league_id}'
@@ -32,6 +31,8 @@ try:
         data = Parser.get_club_dict(html, league_id)
 
         for club in data:
+            print(url)
+            print(club)
             exists = database.find_by_key(club['club_id'], collection, 'club_id')
 
             if type(exists) != type({}):
@@ -47,4 +48,6 @@ try:
 
 except Exception as e:
     print('ERROR')
-    print(e)
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)

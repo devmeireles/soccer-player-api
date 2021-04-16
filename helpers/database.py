@@ -44,7 +44,15 @@ class Database():
 
     @staticmethod
     def find(collection):
-        return Database.connection[f'{collection}'].find()
+        return Database.connection[f'{collection}'].find().sort("_id", -1)
+
+    @staticmethod
+    def find_multiple_by_key(value, collection, key):
+        return Database.connection[f'{collection}'].find({f"{key}": value})
+
+    @staticmethod
+    def find_multiple_by_query(query, collection):
+        return Database.connection[f'{collection}'].find(query)
 
     @staticmethod
     def find_item(id, collection):
